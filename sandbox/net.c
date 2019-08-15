@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "ultimate_ii.h"
+#include "ultimate_lib.h"
 
 unsigned char socket = 0;
 char buff[1024];
@@ -21,7 +21,7 @@ void main(void) {
 
     socket = uii_tcpconnect("cbbsoutpost.servebbs.com", 80);
 
-    if (uii_tcpconnect_success()) {
+    if (uii_success()) {
         uii_tcpsocketwrite_ascii(socket, "GET /api/exportbbslist/service.php?f=csv HTTP/1.0\n\n");
 
         // Skip HTTP header

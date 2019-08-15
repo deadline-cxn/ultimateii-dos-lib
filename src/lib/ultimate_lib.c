@@ -1,5 +1,5 @@
 /*****************************************************************
-Ultimate II+ DOS Command Library
+Ultimate 64/II+ Command Library
 Scott Hutter, Francesco Sblendorio
 
 Based on ultimate_dos-1.1.docx and command interface.docx
@@ -11,7 +11,7 @@ soley at your own risk.
 Patches and pull requests are welcome
 ******************************************************************/
 #include <string.h>
-#include "ultimate_ii.h"
+#include "ultimate_lib.h"
 
 static unsigned char *cmddatareg = (unsigned char *)CMD_DATA_REG;
 static unsigned char *controlreg = (unsigned char *)CONTROL_REG;
@@ -64,8 +64,8 @@ void uii_freeze(void)
 
 void uii_identify(void)
 {
-	unsigned char cmd[] = {0x00,0x01};
-
+	unsigned char cmd[] = {0x00,DOS_CMD_IDENTIFY};
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	uii_readdata();
 	uii_readstatus();
@@ -74,8 +74,8 @@ void uii_identify(void)
 
 void uii_get_path(void)
 {
-	unsigned char cmd[] = {0x00,0x12};	
-	
+	unsigned char cmd[] = {0x00,DOS_CMD_GET_PATH};	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	uii_readdata();
 	uii_readstatus();
@@ -84,9 +84,9 @@ void uii_get_path(void)
 
 void uii_open_dir(void)
 {
-	unsigned char cmd[] = {0x00,0x13};
+	unsigned char cmd[] = {0x00,DOS_CMD_OPEN_DIR};
 	int len = 0;
-	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	uii_readstatus();
 	uii_accept();
@@ -94,15 +94,15 @@ void uii_open_dir(void)
 
 void uii_get_dir(void)
 {
-	unsigned char cmd[] = {0x00,0x14};
+	unsigned char cmd[] = {0x00,DOS_CMD_READ_DIR};
 	int count = 0;
-	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 }
 
 void uii_change_dir(char* directory)
 {
-	unsigned char cmd[] = {0x00,0x11};
+	unsigned char cmd[] = {0x00,DOS_CMD_CHANGE_DIR};
 	
 	int len = 0;
 	int x = 0;
@@ -114,7 +114,8 @@ void uii_change_dir(char* directory)
 	
 	for(x=0;x<strlen(directory);x++)
 		fullcmd[x+2] = directory[x];
-	
+
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(directory)+2);
 	
 	free(fullcmd);
@@ -125,7 +126,7 @@ void uii_change_dir(char* directory)
 
 void uii_create_dir(char *directory)
 {
-	unsigned char cmd[] = {0x00,0x16};
+	unsigned char cmd[] = {0x00,DOS_CMD_CREATE_DIR};
 	int len = 0;
 	int x = 0;
 	unsigned char* fullcmd;
@@ -137,6 +138,7 @@ void uii_create_dir(char *directory)
 	for(x=0;x<strlen(directory);x++)
 		fullcmd[x+2] = directory[x];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(directory)+2);
 	
 	free(fullcmd);
@@ -148,9 +150,10 @@ void uii_create_dir(char *directory)
 
 void uii_change_dir_home(void)
 {
-	unsigned char cmd[] = {0x00,0x17};
+	unsigned char cmd[] = {0x00,DOS_CMD_COPY_HOME_PATH};
 	int count = 0;
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	uii_readstatus();
 	uii_accept();
@@ -158,7 +161,7 @@ void uii_change_dir_home(void)
 
 void uii_mount_disk(unsigned char id, char *filename)
 {
-	unsigned char cmd[] = {0x00,0x23};
+	unsigned char cmd[] = {0x00,DOS_CMD_MOUNT_DISK};
 	int len = 0;
 	int x = 0;
 	unsigned char* fullcmd;
@@ -171,6 +174,7 @@ void uii_mount_disk(unsigned char id, char *filename)
 	for(x=0;x<strlen(filename);x++)
 		fullcmd[x+3] = filename[x];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(filename)+3);
 	
 	free(fullcmd);
@@ -182,10 +186,11 @@ void uii_mount_disk(unsigned char id, char *filename)
 
 void uii_unmount_disk(unsigned char id)
 {
-	unsigned char cmd[] = {0x00,0x24, 0x00};
+	unsigned char cmd[] = {0x00,DOS_CMD_UMOUNT_DISK, 0x00};
 
 	cmd[2] = id;
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 3);
 
 	uii_readdata();
@@ -195,10 +200,11 @@ void uii_unmount_disk(unsigned char id)
 
 void uii_swap_disk(unsigned char id)
 {
-	unsigned char cmd[] = {0x00,0x25, 0x00};	
+	unsigned char cmd[] = {0x00,DOS_CMD_SWAP_DISK, 0x00};	
 	
 	cmd[2] = id;
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 3);
 
 	uii_readdata();
@@ -208,7 +214,7 @@ void uii_swap_disk(unsigned char id)
 
 void uii_open_file(unsigned char attrib, char *filename)
 {
-	unsigned char cmd[] = {0x00,0x02, 0x00};
+	unsigned char cmd[] = {0x00,DOS_CMD_OPEN_FILE, 0x00};
 	
 	int len = 0;
 	int x = 0;
@@ -228,6 +234,7 @@ void uii_open_file(unsigned char attrib, char *filename)
 	for(x=0;x<strlen(filename);x++)
 		fullcmd[x+3] = filename[x];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(filename)+3);
 	
 	free(fullcmd);
@@ -239,8 +246,9 @@ void uii_open_file(unsigned char attrib, char *filename)
 
 void uii_close_file(void)
 {
-	unsigned char cmd[] = {0x00,0x03};
+	unsigned char cmd[] = {0x00,DOS_CMD_CLOSE_FILE};
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	
 	uii_readdata();
@@ -250,11 +258,12 @@ void uii_close_file(void)
 
 void uii_read_file(unsigned char length)
 {
-	unsigned char cmd[] = {0x00,0x04, 0x00, 0x00};
+	unsigned char cmd[] = {0x00,DOS_CMD_READ_DATA, 0x00, 0x00};
 	
 	cmd[2] = length & 0xFF;
 	cmd[3] = length >> 8;
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(cmd, 2);
 	
 	// As with _get_dir(), read this in a loop, and _accept() the data
@@ -265,7 +274,7 @@ void uii_read_file(unsigned char length)
 
 void uii_write_file(unsigned char* data, int length)
 {
-	unsigned char cmd[] = {0x00,0x05, 0x00, 0x00};
+	unsigned char cmd[] = {0x00,DOS_CMD_WRITE_DATA, 0x00, 0x00};
 	
 	unsigned char *fullcmd;
 	int x = 0;
@@ -279,6 +288,7 @@ void uii_write_file(unsigned char* data, int length)
 	for(x=0;x<length;x++)
 		fullcmd[x+4] = data[x];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, length+4);
 	
 	uii_readdata();
@@ -288,7 +298,7 @@ void uii_write_file(unsigned char* data, int length)
 
 void uii_delete_file(char* filename)
 {
-	unsigned char cmd[] = {0x00,0x09};
+	unsigned char cmd[] = {0x00,DOS_CMD_DELETE_FILE};
 	
 	int len = 0;
 	int x = 0;
@@ -301,6 +311,7 @@ void uii_delete_file(char* filename)
 	for(x=0;x<strlen(filename);x++)
 		fullcmd[x+2] = filename[x];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(filename)+2);
 	
 	free(fullcmd);
@@ -311,7 +322,7 @@ void uii_delete_file(char* filename)
 
 void uii_rename_file(char* filename, char* newname)
 {
-	unsigned char cmd[] = {0x00,0x0a};
+	unsigned char cmd[] = {0x00,DOS_CMD_RENAME_FILE};
 	int len = 0;
 	int x = 0;
 	int y = 0;
@@ -329,6 +340,7 @@ void uii_rename_file(char* filename, char* newname)
 	for(;x<strlen(newname);x++)
 		fullcmd[x] = newname[y++];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(filename)+ 3 + strlen(newname));
 	
 	free(fullcmd);
@@ -339,7 +351,7 @@ void uii_rename_file(char* filename, char* newname)
 
 void uii_copy_file(char* sourcefile, char* destfile)
 {
-	unsigned char cmd[] = {0x00,0x0b};
+	unsigned char cmd[] = {0x00,DOS_CMD_COPY_FILE};
 	int len = 0;
 	int x = 0;
 	int y = 0;
@@ -357,6 +369,7 @@ void uii_copy_file(char* sourcefile, char* destfile)
 	for(;x<strlen(destfile);x++)
 		fullcmd[x] = destfile[y++];
 	
+	uii_settarget(TARGET_DOS1);
 	uii_sendcommand(fullcmd, strlen(sourcefile)+ 3 + strlen(destfile));
 	
 	free(fullcmd);
@@ -367,7 +380,81 @@ void uii_copy_file(char* sourcefile, char* destfile)
 
 void uii_echo(void)
 {
-	unsigned char cmd[] = {0x00,0xf0};
+	unsigned char cmd[] = {0x00,DOS_CMD_ECHO};
+	uii_settarget(TARGET_DOS1);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_enable_drive_a(void)
+{
+	unsigned char cmd[] = {0x00,CTRL_CMD_ENABLE_DISK_A};
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_disable_drive_a(void)
+{
+#define CTRL_CMD_DISABLE_DISK_A	0x31
+	unsigned char cmd[] = {0x00,CTRL_CMD_DISABLE_DISK_A};
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_enable_drive_b(void)
+{
+	unsigned char cmd[] = {0x00,CTRL_CMD_ENABLE_DISK_B};
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_disable_drive_b(void)
+{
+	unsigned char cmd[] = {0x00,CTRL_CMD_DISABLE_DISK_B};
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_get_drive_a_power(void) 
+{
+	unsigned char cmd[] = {0x00,CTRL_CMD_DRIVE_A_POWER};
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+void uii_get_drive_b_power(void) 
+{
+	unsigned char cmd[] = {0x00,CTRL_CMD_DRIVE_B_POWER};
+	
+	uii_settarget(TARGET_CONTROL);
 	uii_sendcommand(cmd, 2);
 
 	uii_readdata();
@@ -504,7 +591,7 @@ int uii_readstatus(void)
 void uii_getinterfacecount(void)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x02};
+	unsigned char cmd[] = {0x00,NET_CMD_GET_INTERFACE_COUNT};
 	
 	uii_settarget(TARGET_NETWORK);
 	uii_sendcommand(cmd, 0x02);
@@ -519,7 +606,7 @@ void uii_getinterfacecount(void)
 void uii_getipaddress(void)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x05, 0x00}; // interface 0 (theres only one)
+	unsigned char cmd[] = {0x00,NET_CMD_GET_IP_ADDRESS, 0x00}; // interface 0 (theres only one)
 	
 	uii_settarget(TARGET_NETWORK);
 	uii_sendcommand(cmd, 0x03);
@@ -534,7 +621,7 @@ void uii_getipaddress(void)
 unsigned char uii_tcpconnect(char* host, unsigned short port)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x07, 0x00, 0x00};
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_SOCKET_CONNECT, 0x00, 0x00};
 	int x=0;
 	unsigned char* fullcmd;
 	
@@ -548,9 +635,6 @@ unsigned char uii_tcpconnect(char* host, unsigned short port)
 		fullcmd[x+4] = host[x];
 	
 	fullcmd[4+strlen(host)] = 0x00;
-	
-	//for(x=0;x < 4+strlen(host)+1; x++)
-	//	printf("\nbyte %d: %d", x, fullcmd[x]);
 	
 	uii_settarget(TARGET_NETWORK);
 	uii_sendcommand(fullcmd, 4+strlen(host)+1);
@@ -569,7 +653,7 @@ unsigned char uii_tcpconnect(char* host, unsigned short port)
 void uii_tcpclose(unsigned char socketid)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x09, 0x00};
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_SOCKET_CLOSE, 0x00};
 	cmd[2] = socketid;
 	
 	uii_settarget(TARGET_NETWORK);
@@ -585,7 +669,7 @@ void uii_tcpclose(unsigned char socketid)
 int uii_tcpsocketread(unsigned char socketid, unsigned short length)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x10, 0x00, 0x00, 0x00};
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_SOCKET_READ, 0x00, 0x00, 0x00};
 
 	cmd[0] = cmd[0];
 	cmd[1] = cmd[1];
@@ -604,11 +688,76 @@ int uii_tcpsocketread(unsigned char socketid, unsigned short length)
 	return uii_data[0] | (uii_data[1]<<8);
 }
 
+int uii_tcplistenstart(unsigned short port)
+{
+	unsigned char tempTarget = uii_target;
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_LISTENER_START, 0x00, 0x00};
+	cmd[2] = port & 0xff;
+	cmd[3] = (port>>8) & 0xff;
+	
+	uii_settarget(TARGET_NETWORK);
+	uii_sendcommand(cmd, 0x04);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+	
+	uii_target = tempTarget;
+	return uii_data[0] | (uii_data[1]<<8);
+}
+
+int uii_tcplistenstop()
+{
+	unsigned char tempTarget = uii_target;
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_LISTENER_STOP};
+	
+	uii_settarget(TARGET_NETWORK);
+	uii_sendcommand(cmd, 0x02);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+	
+	uii_target = tempTarget;
+	return uii_data[0] | (uii_data[1]<<8);
+}
+
+int uii_tcpgetlistenstate()
+{
+	unsigned char tempTarget = uii_target;
+	unsigned char cmd[] = {0x00,NET_CMD_GET_LISTENER_STATE};
+	
+	uii_settarget(TARGET_NETWORK);
+	uii_sendcommand(cmd, 0x02);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+	
+	uii_target = tempTarget;
+	return uii_data[0] | (uii_data[1]<<8);
+}
+
+unsigned char uii_tcpgetlistensocket()
+{
+	unsigned char tempTarget = uii_target;
+	unsigned char cmd[] = {0x00,NET_CMD_GET_LISTENER_SOCKET};
+	
+	uii_settarget(TARGET_NETWORK);
+	uii_sendcommand(cmd, 0x02);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+	
+	uii_target = tempTarget;
+	return uii_data[0] | (uii_data[1]<<8);
+}
 
 void uii_tcpsocketwrite_convert_parameter(unsigned char socketid, char *data, int ascii)
 {
 	unsigned char tempTarget = uii_target;
-	unsigned char cmd[] = {0x00,0x11, 0x00};
+	unsigned char cmd[] = {0x00,NET_CMD_TCP_SOCKET_WRITE, 0x00};
 	int x=0;
 	unsigned char* fullcmd;
 	char c;
@@ -696,4 +845,15 @@ int uii_tcp_nextline(unsigned char socketid, char *result) {
 
 int uii_tcp_nextline_ascii(unsigned char socketid, char *result) {
 	return uii_tcp_nextline_convert_parameter(socketid, result, 1);
+}
+
+void uii_reset_uiidata() {
+	uii_data_len = 0;
+	uii_data_index = 0;
+	memset(uii_data, 0, DATA_QUEUE_SZ*2);
+	memset(uii_status, 0, STATUS_QUEUE_SZ);
+}
+
+void uii_tcp_emptybuffer() {
+	uii_data_index = 0;
 }

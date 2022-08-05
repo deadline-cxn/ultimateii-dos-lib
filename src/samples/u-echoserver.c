@@ -3,7 +3,7 @@ Ultimate 64/II+ TCP Network Echo Server Demo
 Scott Hutter
 July 13, 2019
 
-Based on ultimate_dos-1.1.docx and command interface.docx
+Based on ultimate_dos-1.2.docx and command interface.docx
 https://github.com/markusC64/1541ultimate2/tree/master/doc
 
 Disclaimer:  Because of the nature of DOS commands, use this code
@@ -95,11 +95,11 @@ void waitforconnection(void)
             
             do 
             {
-                datacount = uii_tcpsocketread(socketnr, 892);
+                datacount = uii_socketread(socketnr, 892);
 
                 if(datacount == 0)
                 {
-                    uii_tcpclose(socketnr);
+                    uii_socketclose(socketnr);
                     printf("\n\nConnection closed.");
                     break;
                 }
@@ -116,13 +116,13 @@ void waitforconnection(void)
 
                     if(c == 133)
                     {
-                        uii_tcpclose(socketnr);
+                        uii_socketclose(socketnr);
                         printf("\n\nConnection closed.");
                         break;
                     }
 
                     buff[0] = c;
-                    uii_tcpsocketwrite(socketnr, buff);
+                    uii_socketwrite(socketnr, buff);
                     printf("%c", c);
                 }
 

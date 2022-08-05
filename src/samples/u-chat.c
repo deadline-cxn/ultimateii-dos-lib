@@ -2,7 +2,7 @@
 Ultimate II+ TCP Network IRC Demo
 Scott Hutter
 
-Based on ultimate_dos-1.1.docx and command interface.docx
+Based on ultimate_dos-1.2.docx and command interface.docx
 https://github.com/markusC64/1541ultimate2/tree/master/doc
 
 Disclaimer:  Because of the nature of DOS commands, use this code
@@ -61,7 +61,7 @@ void irc_updateheader(char *chan);
 void irc_login(void);
 void irc_refreshscreen(void);
 void irc_print(char *buf, int newlineflg);
-void irc_pong(unsigned char *buf);
+void irc_pong(char *buf);
 void irc_help(void);
 void irc_handleinput(char *buf);
 void getconfig(void);
@@ -193,15 +193,15 @@ void irc_login(void) // Handle IRC login procedures
     char USER_STRING[128];
 	char *chan;
 
-	chan = (unsigned char*) malloc(50 * sizeof(unsigned char));
+	chan = (char*) malloc(50 * sizeof(unsigned char));
     
 	sprintf(NICK_STRING, "nick %s\r\n", nick); // NICK user
     sprintf(USER_STRING, "user %s * 0 :%s\r\n", nick, strlen(realname) == 0 ? nick : realname); // USER user * 0 :Real name
 	sprintf(chan, "join %s\n", channel);
 	
-	uii_tcpsocketwrite(socketnr, NICK_STRING);
-	uii_tcpsocketwrite(socketnr, USER_STRING);
-	uii_tcpsocketwrite(socketnr, chan);
+	uii_socketwrite(socketnr, NICK_STRING);
+	uii_socketwrite(socketnr, USER_STRING);
+	uii_socketwrite(socketnr, chan);
 	
 	irc_updateheader(channel);
 	free(chan);
@@ -347,15 +347,15 @@ void irc_print(char *buf, int newlineflg)
 	
 }
 
-void irc_pong(unsigned char *buf)
+void irc_pong(char *buf)
 {
     buf[0] = 'p';
 	buf[1] = 'o';
 	buf[2] = 'n';
 	buf[3] = 'g';
 
-	uii_tcpsocketwrite(socketnr, buf);
-	uii_tcpsocketwrite(socketnr, "\r\n");
+	uii_socketwrite(socketnr, buf);
+	uii_socketwrite(socketnr, "\r\n");
 }
 
 void irc_help()
@@ -396,7 +396,7 @@ void irc_handleinput(char *buf)
 		irc_updateheader(channel);
 		
 		sprintf(full_message, "join %s\n", channel);
-		uii_tcpsocketwrite(socketnr, full_message);
+		uii_socketwrite(socketnr, full_message);
 	}
 	else if(strstr(buf,"/part") == buf)
 	{
@@ -409,12 +409,12 @@ void irc_handleinput(char *buf)
 		irc_updateheader(nochan);
 		
 		sprintf(full_message, "part %s\n", channel); // Leave current channel
-		uii_tcpsocketwrite(socketnr, full_message);
+		uii_socketwrite(socketnr, full_message);
 		channel[0] = 0;
 	}
 	else if(strstr(buf,"/quit") == buf)
 	{
-		uii_tcpclose(socketnr);
+		uii_socketclose(socketnr);
 		RESET_MACHINE
 	}
 	else if(strstr(buf,"/help") == buf)
@@ -429,7 +429,7 @@ void irc_handleinput(char *buf)
 		strcpy(nick, &buf[6]);
 		
 		sprintf(full_message, "nick %s\n", nick);
-		uii_tcpsocketwrite(socketnr, full_message);
+		uii_socketwrite(socketnr, full_message);
 	}
 	else
 	{
@@ -447,7 +447,7 @@ void irc_handleinput(char *buf)
 				buf[x] = convertchar(buf[x]);
 
 			sprintf(full_message, "privmsg %s :%caction %s%c\n", channel, 0x01, buf, 0x01);
-			uii_tcpsocketwrite(socketnr, full_message);
+			uii_socketwrite(socketnr, full_message);
 			
 			printf("%c", CG_COLOR_YELLOW);
 			irc_print(" * ",1);
@@ -462,7 +462,7 @@ void irc_handleinput(char *buf)
 				buf[x] = convertchar(buf[x]);
 
 			sprintf(full_message, "privmsg %s :%s\n", channel, buf); // PRIVMSG <channel> :Message text
-			uii_tcpsocketwrite(socketnr, full_message);
+			uii_socketwrite(socketnr, full_message);
 			
 			printf("%c", CG_COLOR_CYAN);
 			irc_print("<",1);
@@ -537,8 +537,8 @@ void main(void)
 	unsigned char newline = 0;
 	unsigned char connected = 0;
 	char *msgptr;
-	unsigned char* sender;
-	unsigned char* tmpPtr;
+	char* sender;
+	char* tmpPtr;
 	//unsigned char* tmpPtr2;
 
 	POKEW(0xD020,0);
@@ -568,7 +568,7 @@ void main(void)
 	{
 		while(1)
 		{
-			datacount = uii_tcpsocketread(socketnr, 400);
+			datacount = uii_socketread(socketnr, 400);
 
 			for(x=2;x<datacount+2;x++)
 			{
@@ -593,7 +593,7 @@ void main(void)
 						{
 							if (strstr(inbuf, " privmsg ") != 0)
 							{
-								sender = (unsigned char*) malloc(40 * sizeof(unsigned char));
+								sender = (char*) malloc(40 * sizeof(char));
 							
 								i = 1;
 								while(inbuf[i] != '!')
@@ -606,7 +606,7 @@ void main(void)
 								
 								if (strstr(inbuf, "action ") != 0)
 								{
-									tmpPtr = (unsigned char*) malloc(80 * sizeof(unsigned char));
+									tmpPtr = (char*) malloc(80 * sizeof(char));
 									strcpy(tmpPtr," * ");
 									strcat(tmpPtr,sender);
 									strcat(tmpPtr," ");
@@ -648,7 +648,7 @@ void main(void)
 							}
 							else if (strstr(inbuf, " join ") != 0)
 							{
-								sender = (unsigned char*) malloc(80 * sizeof(unsigned char));
+								sender = (char*) malloc(80 * sizeof(char));
 								i = 1;
 								while(inbuf[i] != '!')
 								{
@@ -669,7 +669,7 @@ void main(void)
 							} 
 							else if (strstr(inbuf, " part ") != 0)
 							{
-								sender = (unsigned char*) malloc(80 * sizeof(unsigned char));
+								sender = (char*) malloc(80 * sizeof(char));
 								i = 1;
 								while(inbuf[i] != '!')
 								{
@@ -690,7 +690,7 @@ void main(void)
 							}
 							else if (strstr(inbuf, " quit ") != 0)
 							{
-								sender = (unsigned char*) malloc(80 * sizeof(unsigned char));
+								sender = (char*) malloc(80 * sizeof(char));
 								i = 1;
 								while(inbuf[i] != '!')
 								{
@@ -711,7 +711,7 @@ void main(void)
 							}
 							else if (strstr(inbuf, " nick ") != 0)
 							{
-								sender = (unsigned char*) malloc(80 * sizeof(unsigned char));
+								sender = (char*) malloc(80 * sizeof(char));
 								i = 1;
 								while(inbuf[i] != '!')
 								{
@@ -737,7 +737,7 @@ void main(void)
 							}
 							else if (strstr(inbuf, " quit ") != 0)
 							{
-								sender = (unsigned char*) malloc(80 * sizeof(unsigned char));
+								sender = (char*) malloc(80 * sizeof(char));
 								i = 1;
 								while(inbuf[i] != '!')
 								{

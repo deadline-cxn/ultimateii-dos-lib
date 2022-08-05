@@ -2,7 +2,7 @@
 Ultimate II+ DOS Command Library
 Scott Hutter
 
-Based on ultimate_dos-1.1.docx and command interface.docx
+Based on ultimate_dos-1.2.docx and command interface.docx
 https://github.com/markusC64/1541ultimate2/tree/master/doc
 
 Disclaimer:  Because of the nature of DOS commands, use this code
@@ -67,7 +67,7 @@ void main(void)
 	printf("\n\nIdentify: %s\nStatus: %s", uii_data, uii_status);
 	
 	uii_getinterfacecount();
-	printf("\n\nInterface count: %d\nStatus: %s", atoi(uii_data), uii_status);
+	printf("\n\nInterface count: %d\nStatus: %us", atoi(uii_data), uii_status);
 	
 	uii_getipaddress();
 	printf("\n\nIP Address: %d.%d.%d.%d", uii_data[0], uii_data[1], uii_data[2], uii_data[3]);
@@ -83,18 +83,18 @@ void main(void)
 	
 	while(uii_success())
 	{
-		datacount = uii_tcpsocketread(socketnr, 1);
+		datacount = uii_socketread(socketnr, 1);
 		printf("%c", uii_data[2]);	// data byte
 	}
 	printf("\n    Status: %s", uii_status);
 	
 	
 	printf("\n\nWriting data...\n");
-	uii_tcpsocketwrite(socketnr, "hello ultimate 64 / uii plus!");
+	uii_socketwrite(socketnr, "hello ultimate 64 / uii plus!");
 	printf("\n    Status: %s", uii_status);
 	
 	printf("\n\nClosing connection");
-	uii_tcpclose(socketnr);
+	uii_socketclose(socketnr);
 	printf("\n    Status: %s", uii_status);
 	
 	// -----------------------------------------------------------

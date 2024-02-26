@@ -172,7 +172,7 @@ void send_dos(char *);
 unsigned char handle_telnet_iac();
 void send_char_ansi(unsigned char c);
 
-char *version = "2.5";
+char *version = "2.6";
 char host[80];
 char portbuff[10];
 char strbuff[520];
@@ -684,6 +684,7 @@ void main(void)
 	int x = 0;
 
 	detect_uci();
+	uii_abort();
 	dev = getcurrentdevice();
 	dev = (dev < 8 ? 8 : dev);
 
